@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, profile, signOut, loading } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const founderBadge = profile?.role === "founder" ? "Founder access" : undefined;
 
   return (
@@ -33,7 +33,7 @@ const Navbar = () => {
               </Link>
               <div className="hidden sm:flex flex-col text-right">
                 <span className="text-xs font-semibold text-foreground">{profile?.email ?? user.email}</span>
-                <span className="text-[10px] uppercase tracking-widest text-accent">{founderBadge || profile?.subscription_tier || "Member"}</span>
+                <span className="text-[10px] uppercase tracking-widest text-accent">{founderBadge || profile?.plan || "Member"}</span>
               </div>
               <button
                 onClick={() => signOut()}
