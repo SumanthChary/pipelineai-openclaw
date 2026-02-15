@@ -19,6 +19,7 @@ export interface CampaignResult {
   failed?: number;
   totalLeads: number;
   details?: unknown;
+  runId?: string;
 }
 
 export async function runCampaign(data: CampaignData): Promise<CampaignResult> {

@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { AlertCircle, CheckCircle2, WifiOff, Wifi } from "lucide-react";
+import { AlertCircle, CheckCircle2, WifiOff, Wifi, Crown } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/lib/supabaseClient";
 
 const defaultLead = {
   leadName: "Jane Founder",
@@ -18,6 +20,7 @@ const CampaignPage = () => {
   const [result, setResult] = useState<CampaignResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isHealthy, setIsHealthy] = useState<boolean | null>(null);
+  const { user, profile } = useAuth();
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -28,7 +31,7 @@ const CampaignPage = () => {
     const formData = new FormData(event.currentTarget);
 
     try {
-      const response = await runCampaign({
+      const payload = {
         campaignName: formData.get("name") as string,
         emailSubject: formData.get("subject") as string,
         emailTemplate: formData.get("template") as string,
@@ -40,9 +43,28 @@ const CampaignPage = () => {
             email: formData.get("leadEmail") as string,
           },
         ],
-      });
+      };
+
+      const response = await runCampaign(payload);
 
       setResult(response);
+
+      if (user && supabase) {
+        const failedCount = response.failed ?? Math.max(response.totalLeads - response.successful, 0);
+        await supabase.from("campaign_runs").insert({
+          user_id: user.id,
+          campaign_name: payload.campaignName,
+          email_subject: payload.emailSubject,
+          email_template: payload.emailTemplate,
+          lead: payload.leads[0],
+          status: "completed",
+          successful: response.successful,
+          failed: failedCount,
+          total_leads: response.totalLeads,
+          remote_campaign_id: response.runId,
+          metadata: { source: "lovable-ui" },
+        });
+      }
     } catch (submissionError) {
       const message = submissionError instanceof Error ? submissionError.message : "Unknown error";
       setError(message);
@@ -70,14 +92,20 @@ const CampaignPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       <div className="max-w-3xl mx-auto px-4 py-24">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
           <div>
             <p className="text-sm uppercase tracking-wide text-muted-foreground">PipelineAI Console</p>
             <h1 className="text-3xl md:text-4xl font-bold text-foreground">Start a Smart Campaign</h1>
           </div>
-          <div className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${isHealthy ? "bg-emerald-500/15 text-emerald-700" : "bg-red-500/15 text-red-600"}`}>
-            {isHealthy ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
-            {isHealthy ? "Backend online" : "Backend offline"}
+          <div className="flex flex-wrap gap-3">
+            <div className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${isHealthy ? "bg-emerald-500/15 text-emerald-700" : "bg-red-500/15 text-red-600"}`}>
+              {isHealthy ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />} {isHealthy ? "Backend online" : "Backend offline"}
+            </div>
+            {profile && (
+              <div className="flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-semibold text-primary">
+                <Crown className="h-4 w-4" /> {profile.role === "founder" ? "Founder access" : profile.plan}
+              </div>
+            )}
           </div>
         </div>
 
@@ -160,25 +188,26 @@ const CampaignPage = () => {
               </div>
             )}
 
-            {result && (
-              <div className="mt-6 rounded-lg border border-emerald-200 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-800 flex items-start gap-2">
-                <CheckCircle2 className="h-5 w-5 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold">Campaign complete</p>
-                  <p>
-                    {result.successful} out of {result.totalLeads} emails generated.
-                    {(() => {
-                      const failedCount = result.failed ?? Math.max(result.totalLeads - result.successful, 0);
-                      return failedCount > 0 ? ` ${failedCount} failed.` : "";
-                    })()}
-                  </p>
+              {result && (
+                <div className="mt-6 rounded-lg border border-emerald-200 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-800 flex items-start gap-2">
+                  <CheckCircle2 className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold">Campaign complete</p>
+                    <p>
+                      {result.successful} out of {result.totalLeads} emails generated.
+                    </p>
+                    {result.details && (
+                      <pre className="mt-2 rounded bg-white/80 p-3 text-xs text-foreground overflow-x-auto">
+                        {JSON.stringify(result.details, null, 2)}
+                      </pre>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
   );
 };
 
