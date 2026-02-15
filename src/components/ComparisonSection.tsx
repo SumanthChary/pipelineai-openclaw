@@ -6,14 +6,14 @@ const features = [
   "Automated Meeting Booking",
   "Built-in Email Warmup",
   "Real-Time Analytics",
-  "Unlimited Contacts",
+  "Open-Source Foundation",
   "CRM Integration",
   "Dedicated Support",
 ];
 
 const tools = [
   {
-    name: "PipelineAI",
+    name: "OpenClaw",
     highlight: true,
     values: [true, true, true, true, true, true, true, true],
   },
@@ -25,7 +25,7 @@ const tools = [
   {
     name: "Apollo",
     highlight: false,
-    values: [false, true, false, false, true, true, true, false],
+    values: [false, true, false, false, true, false, true, false],
   },
 ];
 
@@ -36,7 +36,7 @@ const ComparisonSection = () => {
         <div className="text-center max-w-2xl mx-auto mb-16">
           <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">Comparison</p>
           <h2 className="text-3xl lg:text-4xl font-extrabold text-foreground mb-4">
-            Why Teams Switch From <span className="text-primary">Other Tools</span>
+            Why Teams Choose <span className="text-primary">OpenClaw</span>
           </h2>
         </div>
 

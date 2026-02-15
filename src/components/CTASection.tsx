@@ -8,15 +8,15 @@ const CTASection = () => {
           <div className="relative z-10 text-center py-20 px-6">
             <div className="inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 backdrop-blur-sm border border-primary-foreground/20 px-4 py-1.5 mb-6">
               <span className="w-2 h-2 rounded-full bg-green-light" />
-              <span className="text-xs font-semibold text-primary-foreground/90 tracking-wider uppercase">Join 2,847 Sales Teams</span>
+              <span className="text-xs font-semibold text-primary-foreground/90 tracking-wider uppercase">Powered by OpenClaw</span>
             </div>
 
             <h2 className="text-3xl lg:text-5xl font-extrabold text-primary-foreground mb-4 max-w-2xl mx-auto leading-tight">
-              Ready to 10x Your Sales Meetings?
+              Ready to Automate Your Outbound?
             </h2>
 
             <p className="text-lg text-primary-foreground/80 max-w-xl mx-auto mb-8">
-              Automate your outbound, scale your pipeline, and close more deals without increasing your headcount. Join the future of autonomous sales.
+              Let OpenClaw's AI agents handle prospecting and scheduling so your team can focus on closing deals.
             </p>
 
             <a href="#" className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary-foreground text-primary px-8 text-sm font-semibold hover:bg-primary-foreground/90 transition-colors mb-8">
@@ -49,10 +49,10 @@ const CTASection = () => {
               </div>
             ))}
             <div className="w-10 h-10 rounded-full bg-primary/10 border-2 border-background flex items-center justify-center">
-              <span className="text-xs font-bold text-primary">+2k</span>
+              <span className="text-xs font-bold text-primary">+500</span>
             </div>
           </div>
-          <p className="text-xs font-semibold text-muted-foreground tracking-widest uppercase">Trusted by Industry Leaders Worldwide</p>
+          <p className="text-xs font-semibold text-muted-foreground tracking-widest uppercase">Trusted by Teams Worldwide</p>
         </div>
       </div>
     </section>

@@ -1,4 +1,5 @@
 import { Zap } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -10,10 +11,10 @@ const Footer = () => {
               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
                 <Zap className="w-4 h-4 text-primary-foreground" fill="currentColor" />
               </div>
-              <span className="text-base font-bold text-primary-foreground">PipelineAI</span>
+              <span className="text-base font-bold text-primary-foreground">OpenClaw</span>
             </div>
             <p className="text-sm text-primary-foreground/50 leading-relaxed">
-              AI-powered sales automation that books meetings on autopilot.
+              Open-source AI-powered sales automation that books meetings on autopilot.
             </p>
           </div>
 
@@ -47,7 +48,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-primary-foreground/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-primary-foreground/40">© 2025 PipelineAI. All rights reserved.</p>
+          <p className="text-xs text-primary-foreground/40">© 2026 OpenClaw. All rights reserved.</p>
           <div className="flex gap-6">
             {["Twitter", "LinkedIn", "GitHub"].map((social) => (
               <a key={social} href="#" className="text-xs text-primary-foreground/40 hover:text-primary-foreground/70 transition-colors">

@@ -3,30 +3,30 @@ import { Check, ArrowRight } from "lucide-react";
 const plans = [
   {
     name: "Starter",
-    price: "$97",
+    price: "$49",
     period: "/month",
-    description: "Perfect for solo founders and small teams getting started with outbound.",
+    description: "For solo founders and small teams getting started with AI outreach.",
     features: [
-      "500 AI-personalized emails/mo",
-      "1 AI Sales Agent",
+      "200 AI-personalized emails/mo",
+      "1 AI Agent",
       "Basic analytics",
       "Email warmup included",
-      "CRM integration",
+      "Community support",
     ],
     highlighted: false,
   },
   {
     name: "Growth",
-    price: "$297",
+    price: "$149",
     period: "/month",
     description: "For growing teams ready to scale their outbound pipeline.",
     features: [
-      "2,500 AI-personalized emails/mo",
-      "3 AI Sales Agents",
+      "1,000 AI-personalized emails/mo",
+      "3 AI Agents",
       "Advanced analytics & reports",
       "Multi-channel sequences",
       "Priority support",
-      "Custom ICP targeting",
+      "CRM integration",
     ],
     highlighted: true,
     badge: "Most Popular",
@@ -35,7 +35,7 @@ const plans = [
     name: "Enterprise",
     price: "Custom",
     period: "",
-    description: "For large teams with custom needs and high-volume outreach.",
+    description: "For larger teams with custom needs and high-volume outreach.",
     features: [
       "Unlimited emails",
       "Unlimited AI Agents",
@@ -55,9 +55,9 @@ const PricingSection = () => {
         <div className="text-center max-w-2xl mx-auto mb-16">
           <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">Pricing</p>
           <h2 className="text-3xl lg:text-4xl font-extrabold text-foreground mb-4">
-            Choose Your <span className="text-primary">Growth Plan</span>
+            Simple, Transparent <span className="text-primary">Pricing</span>
           </h2>
-          <p className="text-muted-foreground text-lg">Start free. Upgrade when you're ready to scale.</p>
+          <p className="text-muted-foreground text-lg">Start free for 14 days. No credit card required.</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
