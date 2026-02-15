@@ -1,7 +1,7 @@
 import { FormEvent, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { requestMagicLink } from "@/lib/api";
+import { isApiError, requestMagicLink } from "@/lib/api";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
@@ -14,24 +14,67 @@ const Login = () => {
   const location = useLocation();
   const [email, setEmail] = useState("enjoywithpandu@gmail.com");
   const [status, setStatus] = useState<"idle" | "loading" | "sent" | "error">("idle");
+  const [statusCopy, setStatusCopy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const describeSupabaseError = (err: unknown) => {
+    if (err && typeof err === "object" && "message" in err) {
+      const message = (err as { message?: string }).message || "Unable to send magic link";
+      if (/rate limit/i.test(message)) {
+        return "Too many magic link requests. Wait about a minute and try again.";
+      }
+      return message;
+    }
+    return "Unable to send magic link via Supabase.";
+  };
+
+  const describeMagicLinkError = (err: unknown) => {
+    if (isApiError(err)) {
+      if (err.status === 429) {
+        return "Too many magic link requests. Wait about a minute and try again.";
+      }
+      return err.message || "Unable to send magic link";
+    }
+    if (err instanceof Error) {
+      return err.message;
+    }
+    return "Unable to send magic link";
+  };
+
+  const shouldFallbackToSupabase = (err: unknown) => {
+    if (!isApiError(err)) return true;
+    if (!err.status) return true;
+    return err.status >= 500 || err.status === 404 || err.status === 503;
+  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setStatus("loading");
     setError(null);
+    setStatusCopy(null);
 
     try {
       try {
         await requestMagicLink(email);
         setStatus("sent");
+        setStatusCopy("Magic link sent from Pipeline AI. It works for both sign in and sign up.");
       } catch (magicLinkError) {
         console.error("Magic link API failed", magicLinkError);
-        await signInWithEmail(email);
-        setStatus("sent");
+
+        if (!shouldFallbackToSupabase(magicLinkError)) {
+          throw magicLinkError;
+        }
+
+        try {
+          await signInWithEmail(email);
+          setStatus("sent");
+          setStatusCopy("Magic link sent via Supabase Auth. Open it to finish sign up or sign in.");
+        } catch (supabaseError) {
+          throw new Error(describeSupabaseError(supabaseError));
+        }
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unable to send magic link";
+      const message = describeMagicLinkError(err);
       setError(message);
       setStatus("error");
     }
@@ -45,7 +88,7 @@ const Login = () => {
           <Card className="shadow-xl">
             <CardHeader>
               <CardTitle className="text-2xl">Sign in to PipelineAI</CardTitle>
-              <CardDescription>Magic link authentication. Check your inbox for a secure login link.</CardDescription>
+              <CardDescription>Magic link authentication for both sign up and sign in. Use your work email.</CardDescription>
             </CardHeader>
             <CardContent>
               <form className="space-y-4" onSubmit={handleSubmit}>
@@ -73,7 +116,7 @@ const Login = () => {
                   <ShieldCheck className="h-4 w-4" />
                   <div>
                     <p className="font-semibold">Check your inbox</p>
-                    <p>Click the secure link to continue {location.state?.from ? `to ${location.state.from}` : ""}.</p>
+                    <p>{statusCopy || `Click the secure link to continue ${location.state?.from ? `to ${location.state.from}` : ""}.`}</p>
                   </div>
                 </div>
               )}

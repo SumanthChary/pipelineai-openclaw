@@ -2,12 +2,14 @@ const fallbackEnv = {
   VITE_SUPABASE_URL: "https://qxmcohtzaqrqhfdpamud.supabase.co",
   VITE_SUPABASE_ANON_KEY: "sb_publishable_tUJmfAuAntIMaRvDpVszJw_-6i3a5DW",
   VITE_FOUNDER_EMAIL: "enjoywithpandu@gmail.com",
+  VITE_MAGIC_LINK_REDIRECT: "https://pipelineai-openclaw.lovable.app/dashboard",
 };
 
 type RuntimeEnv = {
   VITE_SUPABASE_URL: string;
   VITE_SUPABASE_ANON_KEY: string;
   VITE_FOUNDER_EMAIL: string;
+  VITE_MAGIC_LINK_REDIRECT: string;
 };
 
 declare global {
@@ -30,4 +32,5 @@ export const runtimeEnv: RuntimeEnv = {
   VITE_SUPABASE_URL: pickEnvValue("VITE_SUPABASE_URL"),
   VITE_SUPABASE_ANON_KEY: pickEnvValue("VITE_SUPABASE_ANON_KEY"),
   VITE_FOUNDER_EMAIL: pickEnvValue("VITE_FOUNDER_EMAIL"),
+  VITE_MAGIC_LINK_REDIRECT: pickEnvValue("VITE_MAGIC_LINK_REDIRECT"),
 };

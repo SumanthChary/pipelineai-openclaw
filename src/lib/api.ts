@@ -1,5 +1,18 @@
 import { API_ENDPOINTS } from "./config";
 
+export interface ApiError extends Error {
+  status?: number;
+}
+
+const buildApiError = (message: string, status?: number): ApiError => {
+  const error = new Error(message) as ApiError;
+  error.status = status;
+  return error;
+};
+
+export const isApiError = (error: unknown): error is ApiError =>
+  Boolean(error && typeof error === "object" && "status" in error);
+
 export interface Lead {
   name: string;
   title: string;
@@ -63,6 +76,6 @@ export async function requestMagicLink(email: string): Promise<void> {
 
   if (!response.ok) {
     const payload = await response.json().catch(() => ({}));
-    throw new Error(payload?.error || "Failed to request magic link");
+    throw buildApiError(payload?.error || "Failed to request magic link", response.status);
   }
 }

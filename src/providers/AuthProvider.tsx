@@ -114,7 +114,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signInWithEmail = async (email: string) => {
     if (!supabase) throw new Error("Supabase client missing");
-    await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin + "/dashboard" } });
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: runtimeEnv.VITE_MAGIC_LINK_REDIRECT || `${window.location.origin}/dashboard`,
+        shouldCreateUser: true,
+      },
+    });
+
+    if (error) {
+      throw error;
+    }
   };
 
   const signOut = async () => {

@@ -58,7 +58,7 @@ Browser ──(fetch /api/campaigns/submit)──▶ Bridge API ──▶ opencl
 | `VITE_SUPABASE_URL` | — | Supabase project URL for auth + database. Required to enable login. |
 | `VITE_SUPABASE_ANON_KEY` | — | Supabase anon key paired with the above URL. |
 | `VITE_FOUNDER_EMAIL` | `enjoywithpandu@gmail.com` | Email that receives "founder" limits and bypasses rate caps. |
-| `SUPABASE_SERVICE_ROLE_KEY` | — | **Never ship to the client.** Only used locally for `npm run supabase:bootstrap`. |
+| `SUPABASE_SERVICE_ROLE_KEY` | — | **Never ship to the client.** Required for Resend-backed magic links and `npm run supabase:bootstrap`. This is the `service_role` key that starts with `eyJhb...`. |
 | `SUPABASE_ACCESS_TOKEN` | — | Supabase management token for running the bootstrap SQL. |
 | `MAGIC_LINK_REDIRECT` | `https://pipelineai-openclaw.lovable.app/dashboard` | Destination used inside the Resend-auth emails. |
 
@@ -110,8 +110,10 @@ Browser ──(fetch /api/campaigns/submit)──▶ Bridge API ──▶ opencl
 
 - The Node bridge (`npm run api`) exposes `POST /api/auth/magic-link`.
 - It uses `SUPABASE_SERVICE_ROLE_KEY` to generate a Supabase action link and then emails it via Resend (`RESEND_API_KEY` + `RESEND_FROM_EMAIL`).
+- Missing either the service-role key or the Resend credentials will return HTTP 503 so the frontend can fall back to Supabase directly.
 - Configure `MAGIC_LINK_REDIRECT` if you want the CTA to land somewhere other than `/dashboard`.
 - The frontend now calls this endpoint first; if it fails, it falls back to Supabase's built-in `signInWithOtp` so auth always works.
+- Supabase still enforces a short per-email rate limit. When the limit is hit the UI now surfaces a "wait a minute" message.
 
 ## Scripts
 
