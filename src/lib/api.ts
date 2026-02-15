@@ -25,6 +25,9 @@ export interface CampaignData {
   emailTemplate: string;
   emailSubject: string;
   leads: Lead[];
+  contactEmail?: string;
+  submittedBy?: string;
+  metadata?: Record<string, unknown>;
 }
 
 export interface CampaignResult {
@@ -58,11 +61,11 @@ const fetchWithTimeout = async (input: RequestInfo | URL, init?: RequestInit, ti
 };
 
 export async function runCampaign(data: CampaignData): Promise<CampaignResult> {
-  const response = await fetch(API_ENDPOINTS.runCampaign, {
+  const response = await fetchWithTimeout(API_ENDPOINTS.runCampaign, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
-  });
+  }, 15000);
 
   if (!response.ok) {
     const errorPayload = await response.text();

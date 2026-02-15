@@ -21,6 +21,8 @@ const CampaignPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [isHealthy, setIsHealthy] = useState<boolean | null>(null);
   const { user, profile } = useAuth();
+  const contactEmail = profile?.email ?? user?.email ?? "";
+  const contactMissing = contactEmail.length === 0;
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -43,6 +45,16 @@ const CampaignPage = () => {
             email: formData.get("leadEmail") as string,
           },
         ],
+        contactEmail: contactEmail || undefined,
+        submittedBy: user?.email ?? undefined,
+        metadata: {
+          workspacePlan: profile?.plan ?? "starter",
+          seats: profile?.seats,
+          maxParallelRuns: profile?.max_parallel_runs,
+          maxDailyCampaigns: profile?.max_daily_campaigns,
+          isFounder: profile?.is_founder ?? false,
+          userId: user?.id,
+        },
       };
 
       const response = await runCampaign(payload);
@@ -143,7 +155,16 @@ const CampaignPage = () => {
                 </div>
               </div>
 
-              <div className="border-t pt-4">
+              <div className="border-t pt-4 space-y-4">
+                <div className="grid gap-2">
+                  <label htmlFor="contact-email" className="text-sm font-medium text-foreground/80">
+                    Notification Email
+                  </label>
+                  <Input id="contact-email" value={contactEmail} disabled placeholder="you@company.com" className="bg-muted" />
+                  {contactMissing && (
+                    <p className="text-sm text-amber-600">Log out and back in after verifying your email to enable Resend notifications.</p>
+                  )}
+                </div>
                 <h3 className="text-base font-semibold mb-3">Test Lead</h3>
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="grid gap-2">
@@ -173,7 +194,7 @@ const CampaignPage = () => {
                 </div>
               </div>
 
-              <Button type="submit" disabled={loading} className="w-full gap-2">
+              <Button type="submit" disabled={loading || contactMissing} className="w-full gap-2">
                 {loading ? "Processing..." : "Start Campaign"}
               </Button>
             </form>
