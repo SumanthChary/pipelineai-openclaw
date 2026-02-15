@@ -1,0 +1,185 @@
+import { FormEvent, useEffect, useState } from "react";
+import { runCampaign, checkBackendHealth, CampaignResult } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { AlertCircle, CheckCircle2, WifiOff, Wifi } from "lucide-react";
+
+const defaultLead = {
+  leadName: "Jane Founder",
+  leadTitle: "CEO",
+  leadCompany: "Acme Labs",
+  leadEmail: "jane@acme.com",
+};
+
+const CampaignPage = () => {
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<CampaignResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isHealthy, setIsHealthy] = useState<boolean | null>(null);
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setLoading(true);
+    setError(null);
+    setResult(null);
+
+    const formData = new FormData(event.currentTarget);
+
+    try {
+      const response = await runCampaign({
+        campaignName: formData.get("name") as string,
+        emailSubject: formData.get("subject") as string,
+        emailTemplate: formData.get("template") as string,
+        leads: [
+          {
+            name: formData.get("leadName") as string,
+            title: formData.get("leadTitle") as string,
+            company: formData.get("leadCompany") as string,
+            email: formData.get("leadEmail") as string,
+          },
+        ],
+      });
+
+      setResult(response);
+    } catch (submissionError) {
+      const message = submissionError instanceof Error ? submissionError.message : "Unknown error";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    let mounted = true;
+    const pollHealth = async () => {
+      const healthy = await checkBackendHealth();
+      if (mounted) setIsHealthy(healthy);
+    };
+
+    pollHealth();
+    const interval = setInterval(pollHealth, 20000);
+
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
+      <div className="max-w-3xl mx-auto px-4 py-24">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <p className="text-sm uppercase tracking-wide text-muted-foreground">PipelineAI Console</p>
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground">Start a Smart Campaign</h1>
+          </div>
+          <div className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${isHealthy ? "bg-emerald-500/15 text-emerald-700" : "bg-red-500/15 text-red-600"}`}>
+            {isHealthy ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
+            {isHealthy ? "Backend online" : "Backend offline"}
+          </div>
+        </div>
+
+        <Card className="shadow-2xl">
+          <CardHeader>
+            <CardTitle>Create a pilot campaign</CardTitle>
+            <CardDescription>Send a templated run to the ngrok-hosted OpenClaw worker.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <label htmlFor="campaign-name" className="text-sm font-medium text-foreground/80">
+                    Campaign Name
+                  </label>
+                  <Input id="campaign-name" name="name" placeholder="Product Hunt Relaunch" required />
+                </div>
+                <div className="grid gap-2">
+                  <label htmlFor="campaign-subject" className="text-sm font-medium text-foreground/80">
+                    Email Subject
+                  </label>
+                  <Input id="campaign-subject" name="subject" placeholder="Quick idea for {{first_name}}" required />
+                </div>
+                <div className="grid gap-2">
+                  <label htmlFor="campaign-template" className="text-sm font-medium text-foreground/80">
+                    Email Template
+                  </label>
+                  <Textarea
+                    id="campaign-template"
+                    name="template"
+                    rows={5}
+                    placeholder="Hi {{first_name}}, we built PipeLineAI to..."
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="border-t pt-4">
+                <h3 className="text-base font-semibold mb-3">Test Lead</h3>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-2">
+                    <label htmlFor="lead-name" className="text-sm font-medium text-foreground/80">
+                      Lead Name
+                    </label>
+                    <Input id="lead-name" name="leadName" placeholder={defaultLead.leadName} required />
+                  </div>
+                  <div className="grid gap-2">
+                    <label htmlFor="lead-title" className="text-sm font-medium text-foreground/80">
+                      Title
+                    </label>
+                    <Input id="lead-title" name="leadTitle" placeholder={defaultLead.leadTitle} required />
+                  </div>
+                  <div className="grid gap-2">
+                    <label htmlFor="lead-company" className="text-sm font-medium text-foreground/80">
+                      Company
+                    </label>
+                    <Input id="lead-company" name="leadCompany" placeholder={defaultLead.leadCompany} required />
+                  </div>
+                  <div className="grid gap-2">
+                    <label htmlFor="lead-email" className="text-sm font-medium text-foreground/80">
+                      Email
+                    </label>
+                    <Input id="lead-email" type="email" name="leadEmail" placeholder={defaultLead.leadEmail} required />
+                  </div>
+                </div>
+              </div>
+
+              <Button type="submit" disabled={loading} className="w-full gap-2">
+                {loading ? "Processing..." : "Start Campaign"}
+              </Button>
+            </form>
+
+            {error && (
+              <div className="mt-6 rounded-lg border border-red-200 bg-red-50/70 px-4 py-3 text-sm text-red-700 flex items-start gap-2">
+                <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold">Submission failed</p>
+                  <p>{error}</p>
+                </div>
+              </div>
+            )}
+
+            {result && (
+              <div className="mt-6 rounded-lg border border-emerald-200 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-800 flex items-start gap-2">
+                <CheckCircle2 className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold">Campaign complete</p>
+                  <p>
+                    {result.successful} out of {result.totalLeads} emails generated.
+                    {(() => {
+                      const failedCount = result.failed ?? Math.max(result.totalLeads - result.successful, 0);
+                      return failedCount > 0 ? ` ${failedCount} failed.` : "";
+                    })()}
+                  </p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default CampaignPage;
