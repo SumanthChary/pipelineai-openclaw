@@ -38,22 +38,48 @@ export interface CampaignResult {
   runId?: string;
 }
 
-const fetchWithTimeout = async (input: RequestInfo | URL, init?: RequestInit, timeout = 10000): Promise<Response> => {
+/** Default headers needed for ngrok free-tier (skip the interstitial page). */
+const NGROK_HEADERS: Record<string, string> = {
+  "ngrok-skip-browser-warning": "true",
+};
+
+const fetchWithTimeout = async (
+  input: RequestInfo | URL,
+  init?: RequestInit,
+  timeout = 30_000,
+): Promise<Response> => {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeout);
+  const mergedHeaders = { ...NGROK_HEADERS, ...(init?.headers as Record<string, string> | undefined) };
   try {
-    return await fetch(input, { ...(init || {}), signal: controller.signal });
+    return await fetch(input, { ...(init || {}), headers: mergedHeaders, signal: controller.signal });
   } finally {
     clearTimeout(timer);
   }
 };
 
 export async function runCampaign(data: CampaignData): Promise<CampaignResult> {
-  const response = await fetchWithTimeout(API_ENDPOINTS.runCampaign, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  }, 15000);
+  let response: Response;
+  try {
+    response = await fetchWithTimeout(
+      API_ENDPOINTS.runCampaign,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      },
+      120_000, // 2 minutes — OpenClaw worker can take 60s+
+    );
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new Error(
+        "The campaign request timed out after 2 minutes. Make sure the OpenClaw worker is running on the bridge machine.",
+      );
+    }
+    throw new Error(
+      `Network error: unable to reach the campaign server. ${err instanceof Error ? err.message : ""}".trim()`,
+    );
+  }
 
   if (!response.ok) {
     const errorPayload = await response.text();
@@ -71,7 +97,7 @@ export async function runCampaign(data: CampaignData): Promise<CampaignResult> {
 
 export async function checkBackendHealth(): Promise<boolean> {
   try {
-    const response = await fetch(API_ENDPOINTS.health);
+    const response = await fetchWithTimeout(API_ENDPOINTS.health, undefined, 10_000);
     if (!response.ok) return false;
     const data = await response.json();
     return data?.status === "ok";

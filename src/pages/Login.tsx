@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
@@ -6,7 +6,9 @@ import Footer from "@/components/Footer";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Mail, ShieldCheck } from "lucide-react";
+import { Mail, ShieldCheck, Clock } from "lucide-react";
+
+const COOLDOWN_SECONDS = 60;
 
 const Login = () => {
   const { signInWithEmail } = useAuth();
@@ -15,6 +17,26 @@ const Login = () => {
   const [status, setStatus] = useState<"idle" | "loading" | "sent" | "error">("idle");
   const [statusCopy, setStatusCopy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [cooldown, setCooldown] = useState(0);
+  const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Start a countdown timer
+  const startCooldown = useCallback((seconds = COOLDOWN_SECONDS) => {
+    setCooldown(seconds);
+    if (cooldownRef.current) clearInterval(cooldownRef.current);
+    cooldownRef.current = setInterval(() => {
+      setCooldown((prev) => {
+        if (prev <= 1) {
+          clearInterval(cooldownRef.current!);
+          cooldownRef.current = null;
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []);
+
+  useEffect(() => () => { if (cooldownRef.current) clearInterval(cooldownRef.current); }, []);
 
   const describeSupabaseError = (err: unknown) => {
     if (err && typeof err === "object" && "message" in err) {
@@ -39,6 +61,7 @@ const Login = () => {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (cooldown > 0) return;
     setStatus("loading");
     setError(null);
     setStatusCopy(null);
@@ -46,11 +69,17 @@ const Login = () => {
     try {
       await signInWithEmail(email);
       setStatus("sent");
-      setStatusCopy("Magic link sent via Supabase. Check your inbox to finish signing in.");
+      setStatusCopy("Magic link sent via Supabase. Check your inbox (and spam folder) to finish signing in.");
+      startCooldown(); // prevent spamming
     } catch (err) {
       const message = describeMagicLinkError(err);
       setError(message);
       setStatus("error");
+
+      // If rate-limited, start cooldown so the user waits
+      if (/rate limit/i.test(message)) {
+        startCooldown();
+      }
     }
   };
 
@@ -79,9 +108,15 @@ const Login = () => {
                     required
                   />
                 </div>
-                <Button type="submit" disabled={status === "loading" || status === "sent"} className="w-full gap-2">
-                  {status === "loading" ? "Sending…" : status === "sent" ? "Magic link sent" : "Email me a login link"}
-                  <Mail className="h-4 w-4" />
+                <Button type="submit" disabled={status === "loading" || status === "sent" || cooldown > 0} className="w-full gap-2">
+                  {cooldown > 0
+                    ? `Wait ${cooldown}s…`
+                    : status === "loading"
+                      ? "Sending…"
+                      : status === "sent"
+                        ? "Magic link sent"
+                        : "Email me a login link"}
+                  {cooldown > 0 ? <Clock className="h-4 w-4" /> : <Mail className="h-4 w-4" />}
                 </Button>
               </form>
 
@@ -96,7 +131,15 @@ const Login = () => {
               )}
 
               {error && (
-                <p className="mt-4 text-sm text-red-600">{error}</p>
+                <div className="mt-4 space-y-2">
+                  <p className="text-sm text-red-600">{error}</p>
+                  {cooldown > 0 && (
+                    <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50/80 px-3 py-2 text-sm text-amber-800">
+                      <Clock className="h-4 w-4 flex-shrink-0" />
+                      <span>You can try again in <strong>{cooldown}s</strong>. Supabase rate limits OTP requests for security.</span>
+                    </div>
+                  )}
+                </div>
               )}
             </CardContent>
           </Card>

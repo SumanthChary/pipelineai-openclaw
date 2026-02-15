@@ -268,6 +268,18 @@ const server = createServer(async (req, res) => {
 
     const url = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
 
+    // ── Health check ─────────────────────────────────────────────
+    if (req.method === "GET" && url.pathname === "/api/health") {
+      respond(res, 200, {
+        success: true,
+        status: "ok",
+        resendConfigured: Boolean(resendClient && resendFromEmail),
+        supabaseConfigured: Boolean(supabaseAdminClient),
+        timestamp: new Date().toISOString(),
+      });
+      return;
+    }
+
     if (req.method === "GET" && url.pathname === "/api/auth/status") {
       const supabaseStatus = await checkSupabaseAdmin({ force: true });
       const resendStatus = {
