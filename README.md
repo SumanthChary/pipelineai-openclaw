@@ -55,6 +55,11 @@ Browser ──(fetch /api/campaigns/submit)──▶ Bridge API ──▶ opencl
 | `RESEND_API_KEY` | — | Optional. Enables transactional email confirmations via Resend. |
 | `RESEND_FROM_EMAIL` | — | Required when `RESEND_API_KEY` is set. Must be a verified Resend sender. |
 | `RESEND_NOTIFY_EMAIL` | — | Fallback recipient when a submission omits `contactEmail`. |
+| `VITE_SUPABASE_URL` | — | Supabase project URL for auth + database. Required to enable login. |
+| `VITE_SUPABASE_ANON_KEY` | — | Supabase anon key paired with the above URL. |
+| `VITE_FOUNDER_EMAIL` | `enjoywithpandu@gmail.com` | Email that receives "founder" limits and bypasses rate caps. |
+| `SUPABASE_SERVICE_ROLE_KEY` | — | **Never ship to the client.** Only used locally for `npm run supabase:bootstrap`. |
+| `SUPABASE_ACCESS_TOKEN` | — | Supabase management token for running the bootstrap SQL. |
 
 ## Request Contract
 
@@ -80,6 +85,25 @@ Browser ──(fetch /api/campaigns/submit)──▶ Bridge API ──▶ opencl
 - If you provide `RESEND_API_KEY` and `RESEND_FROM_EMAIL`, the bridge server automatically emails the submitter (`contactEmail`) the tracking ID once a request file is written.
 - Missing `contactEmail`? Set `RESEND_NOTIFY_EMAIL` to send confirmations to an internal distribution list instead.
 - Notifications use Resend's transactional API and do **not** block the HTTP response—failures are logged server-side.
+
+### Where to put Resend credentials
+
+- **Local development** – create/update `.env.local` at the repo root with `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, and (optionally) `RESEND_NOTIFY_EMAIL`, then run `npm run api`.
+- **Hosted bridge/API** – add the same keys to the hosting provider's environment-variable screen (e.g., Render, Railway, Fly). Never expose the key through the Vite frontend build.
+- Share sensitive values (like the actual API key) only through your secrets manager or 1Password. Drop them into `.env.local` yourself; do **not** commit them.
+
+## Supabase Auth + Database
+
+1. Duplicate `.env.example` to `.env.local` and fill in `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, and (optionally) override `VITE_FOUNDER_EMAIL`.
+2. Generate a Supabase personal access token (Project Settings → API → Access Tokens) and add it as `SUPABASE_ACCESS_TOKEN` in `.env.local`. Add `SUPABASE_SERVICE_ROLE_KEY` if you plan to run the bootstrap locally.
+3. Apply the schema + policies:
+	```sh
+	npm run supabase:bootstrap
+	```
+4. In Supabase dashboard open **Authentication → Providers → Email** and ensure the email sender is configured. Supabase will send the magic-link email automatically when `signInWithOtp` runs.
+5. For deployments (Lovable, Vercel, Netlify, etc.) add `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, and `VITE_FOUNDER_EMAIL` in the host's environment-variable UI before building. Without them the UI will show "Supabase client missing" and auth will be disabled.
+
+> **Lovable tip:** in your Lovable project go to **Settings → Environment Variables**, add the three Vite variables, redeploy, and the login form will immediately start issuing Supabase magic links from your configured project.
 
 ## Scripts
 
