@@ -3,7 +3,7 @@ const fallbackEnv = {
   VITE_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4bWNvaHR6YXFycWhmZHBhbXVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExMzYzMDUsImV4cCI6MjA4NjcxMjMwNX0.rraQElvYcposyucEE7fa26eh7WjcHM3cqpZbzebdNIk",
   VITE_FOUNDER_EMAIL: "enjoywithpandu@gmail.com",
   VITE_MAGIC_LINK_REDIRECT: "https://pipelineai-openclaw.lovable.app/dashboard",
-  VITE_API_URL: "http://localhost:8787",
+  VITE_API_URL: "https://knaggy-katherina-unresplendently.ngrok-free.dev",
 };
 
 type RuntimeEnv = {
