@@ -33,11 +33,7 @@ const App = () => (
             />
             <Route
               path="/campaign"
-              element={
-                <ProtectedRoute>
-                  <Campaign />
-                </ProtectedRoute>
-              }
+              element={<Campaign />}
             />
             <Route
               path="/profile"

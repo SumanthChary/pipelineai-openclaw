@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { AlertCircle, CheckCircle2, WifiOff, Wifi, Crown } from "lucide-react";
+import { AlertCircle, CheckCircle2, WifiOff, Wifi, Crown, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -15,14 +15,21 @@ const defaultLead = {
   leadEmail: "jane@acme.com",
 };
 
+const generateFallbackEmail = () => `pipelineai+${Date.now()}-${Math.random().toString(36).slice(2, 8)}@pipeline.ai`;
+
 const CampaignPage = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<CampaignResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isHealthy, setIsHealthy] = useState<boolean | null>(null);
   const { user, profile } = useAuth();
-  const contactEmail = profile?.email ?? user?.email ?? "";
-  const contactMissing = contactEmail.length === 0;
+  const [contactEmail, setContactEmail] = useState(profile?.email ?? user?.email ?? "");
+  const [lastNotificationEmail, setLastNotificationEmail] = useState<string | null>(null);
+  const [fallbackNotice, setFallbackNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    setContactEmail(profile?.email ?? user?.email ?? "");
+  }, [profile?.email, user?.email]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -33,6 +40,10 @@ const CampaignPage = () => {
     const formData = new FormData(event.currentTarget);
 
     try {
+      const trimmedContact = contactEmail.trim();
+      const notificationEmail = trimmedContact || generateFallbackEmail();
+      const fallbackGenerated = !trimmedContact;
+
       const payload = {
         campaignName: formData.get("name") as string,
         emailSubject: formData.get("subject") as string,
@@ -45,7 +56,7 @@ const CampaignPage = () => {
             email: formData.get("leadEmail") as string,
           },
         ],
-        contactEmail: contactEmail || undefined,
+        contactEmail: notificationEmail,
         submittedBy: user?.email ?? undefined,
         metadata: {
           workspacePlan: profile?.plan ?? "starter",
@@ -77,6 +88,9 @@ const CampaignPage = () => {
           metadata: { source: "lovable-ui" },
         });
       }
+
+      setLastNotificationEmail(notificationEmail);
+      setFallbackNotice(fallbackGenerated ? `Using temporary alias ${notificationEmail}` : null);
     } catch (submissionError) {
       const message = submissionError instanceof Error ? submissionError.message : "Unknown error";
       setError(message);
@@ -160,9 +174,17 @@ const CampaignPage = () => {
                   <label htmlFor="contact-email" className="text-sm font-medium text-foreground/80">
                     Notification Email
                   </label>
-                  <Input id="contact-email" value={contactEmail} disabled placeholder="you@company.com" className="bg-muted" />
-                  {contactMissing && (
-                    <p className="text-sm text-amber-600">Log out and back in after verifying your email to enable Resend notifications.</p>
+                  <Input
+                    id="contact-email"
+                    value={contactEmail}
+                    onChange={(event) => setContactEmail(event.target.value)}
+                    placeholder="you@company.com"
+                  />
+                  {!contactEmail.trim() && (
+                    <div className="inline-flex items-center gap-2 rounded-md border border-amber-300/80 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                      <Sparkles className="h-4 w-4" />
+                      We will send confirmations to a temporary alias if you leave this blank.
+                    </div>
                   )}
                 </div>
                 <h3 className="text-base font-semibold mb-3">Test Lead</h3>
@@ -194,10 +216,23 @@ const CampaignPage = () => {
                 </div>
               </div>
 
-              <Button type="submit" disabled={loading || contactMissing} className="w-full gap-2">
+              <Button type="submit" disabled={loading} className="w-full gap-2">
                 {loading ? "Processing..." : "Start Campaign"}
               </Button>
+              {lastNotificationEmail && (
+                <p className="text-xs text-muted-foreground text-center">Notifications will go to {lastNotificationEmail}.</p>
+              )}
             </form>
+
+            {fallbackNotice && !error && (
+              <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50/80 px-4 py-3 text-sm text-amber-900 flex items-start gap-2">
+                <Sparkles className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold">Temporary contact</p>
+                  <p>{fallbackNotice}</p>
+                </div>
+              </div>
+            )}
 
             {error && (
               <div className="mt-6 rounded-lg border border-red-200 bg-red-50/70 px-4 py-3 text-sm text-red-700 flex items-start gap-2">

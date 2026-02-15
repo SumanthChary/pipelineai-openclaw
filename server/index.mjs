@@ -89,10 +89,10 @@ const sendResendNotification = async ({ requestId, campaignData }) => {
     return;
   }
 
-  const toAddress = campaignData.contactEmail || resendFallbackTo;
-  if (!toAddress) {
-    console.warn("[resend] Skipping email because no contactEmail or RESEND_NOTIFY_EMAIL is set");
-    return;
+  const randomNotification = () => `pipelineai+${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`;
+  const toAddress = campaignData.contactEmail || resendFallbackTo || randomNotification();
+  if (!campaignData.contactEmail && !resendFallbackTo) {
+    console.warn("[resend] Using temporary notification alias", toAddress);
   }
 
   const campaignLabel = campaignData.campaignName || requestId;
