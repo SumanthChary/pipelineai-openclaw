@@ -101,9 +101,9 @@ Browser ──(fetch /api/campaigns/submit)──▶ Bridge API ──▶ opencl
 	npm run supabase:bootstrap
 	```
 4. In Supabase dashboard open **Authentication → Providers → Email** and ensure the email sender is configured. Supabase will send the magic-link email automatically when `signInWithOtp` runs.
-5. For deployments (Lovable, Vercel, Netlify, etc.) add `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, and `VITE_FOUNDER_EMAIL` in the host's environment-variable UI before building. Without them the UI will show "Supabase client missing" and auth will be disabled.
+5. For deployments (Lovable, Vercel, Netlify, etc.) add `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, and `VITE_FOUNDER_EMAIL` in the host's environment-variable UI before building. If your platform injects runtime globals instead, expose `window.__PIPELINEAI_ENV = { VITE_SUPABASE_URL: "...", ... }` before loading the bundle and the client will pick them up.
 
-> **Lovable tip:** in your Lovable project go to **Settings → Environment Variables**, add the three Vite variables, redeploy, and the login form will immediately start issuing Supabase magic links from your configured project.
+> **Lovable tip:** in your Lovable project go to **Settings → Environment Variables**, add the three Vite variables, redeploy, and the login form will immediately start issuing Supabase magic links from your configured project. As an emergency fallback you can also inject the globals by adding a head script: `<script>window.__PIPELINEAI_ENV={VITE_SUPABASE_URL:"https://...",VITE_SUPABASE_ANON_KEY:"sb_..."};</script>`.
 
 ## Scripts
 

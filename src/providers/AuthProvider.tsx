@@ -1,6 +1,7 @@
 import { ReactNode, createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabaseClient";
+import { runtimeEnv } from "@/lib/runtimeEnv";
 
 export type ProfileRecord = {
   id: string;
@@ -26,7 +27,7 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-const founderEmail = (import.meta.env.VITE_FOUNDER_EMAIL || "enjoywithpandu@gmail.com").toLowerCase();
+const founderEmail = runtimeEnv.VITE_FOUNDER_EMAIL.toLowerCase();
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
