@@ -10,7 +10,7 @@ const StatsSection = () => {
     <section className="py-24 bg-secondary">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">Results</p>
+          <p className="text-sm font-semibold text-accent uppercase tracking-wider mb-3">Results</p>
           <h2 className="text-3xl lg:text-4xl font-extrabold text-foreground">
             Real Results From <span className="text-primary">Real Teams</span>
           </h2>
