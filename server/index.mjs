@@ -2,6 +2,7 @@ import { createServer } from "node:http";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { Resend } from "resend";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
 const DEFAULT_WINDOWS_BRIDGE = path.join(
   "C:",
@@ -20,6 +21,11 @@ const resendApiKey = process.env.RESEND_API_KEY;
 const resendFromEmail = process.env.RESEND_FROM_EMAIL;
 const resendFallbackTo = process.env.RESEND_NOTIFY_EMAIL;
 const resendClient = resendApiKey ? new Resend(resendApiKey) : null;
+
+const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || null;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || null;
+const supabaseAdminClient = supabaseUrl && supabaseServiceKey ? createSupabaseClient(supabaseUrl, supabaseServiceKey) : null;
+const magicLinkRedirect = process.env.MAGIC_LINK_REDIRECT || `${process.env.PUBLIC_SITE_URL || "https://pipelineai-openclaw.lovable.app"}/dashboard`;
 
 const respond = (res, statusCode, payload) => {
   res.writeHead(statusCode, {
@@ -119,6 +125,46 @@ const sendResendNotification = async ({ requestId, campaignData }) => {
   }
 };
 
+const sendMagicLinkEmail = async (email) => {
+  if (!supabaseAdminClient) {
+    throw new Error("Supabase admin client not configured");
+  }
+  if (!resendClient || !resendFromEmail) {
+    throw new Error("Resend is not configured");
+  }
+
+  const { data, error } = await supabaseAdminClient.auth.admin.generateLink({
+    type: "magiclink",
+    email,
+    options: {
+      redirectTo: magicLinkRedirect,
+    },
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data?.action_link) {
+    throw new Error("Supabase did not return an action link");
+  }
+
+  const actionLink = data.action_link;
+
+  await resendClient.emails.send({
+    from: resendFromEmail,
+    to: [email],
+    subject: "Your Pipeline AI login link",
+    html: `
+      <p>Hey there,</p>
+      <p>Tap the secure link below to sign in to Pipeline AI:</p>
+      <p><a href="${actionLink}">Access Dashboard</a></p>
+      <p>This link expires in 5 minutes. If you didn\'t request it, you can ignore this email.</p>
+    `,
+    text: `Sign in to Pipeline AI: ${actionLink}\nThis link expires in 5 minutes.`,
+  });
+};
+
 const server = createServer(async (req, res) => {
   try {
     if (req.method === "OPTIONS") {
@@ -127,6 +173,24 @@ const server = createServer(async (req, res) => {
     }
 
     const url = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
+
+    if (req.method === "POST" && url.pathname === "/api/auth/magic-link") {
+      try {
+        const payload = await readJsonBody(req);
+        const email = (payload?.email || "").toString().trim().toLowerCase();
+        if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+          respond(res, 400, { success: false, error: "Valid email is required" });
+          return;
+        }
+
+        await sendMagicLinkEmail(email);
+        respond(res, 200, { success: true, message: "Magic link sent via Resend" });
+      } catch (error) {
+        console.error("[/api/auth/magic-link]", error);
+        respond(res, 500, { success: false, error: error.message });
+      }
+      return;
+    }
 
     if (req.method === "POST" && url.pathname === "/api/campaigns/submit") {
       const campaignData = await readJsonBody(req);

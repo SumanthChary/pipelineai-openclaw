@@ -53,3 +53,16 @@ export async function checkBackendHealth(): Promise<boolean> {
     return false;
   }
 }
+
+export async function requestMagicLink(email: string): Promise<void> {
+  const response = await fetch(API_ENDPOINTS.magicLink, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({}));
+    throw new Error(payload?.error || "Failed to request magic link");
+  }
+}

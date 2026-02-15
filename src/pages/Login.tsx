@@ -1,6 +1,7 @@
 import { FormEvent, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { requestMagicLink } from "@/lib/api";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
@@ -21,8 +22,14 @@ const Login = () => {
     setError(null);
 
     try {
-      await signInWithEmail(email);
-      setStatus("sent");
+      try {
+        await requestMagicLink(email);
+        setStatus("sent");
+      } catch (magicLinkError) {
+        console.error("Magic link API failed", magicLinkError);
+        await signInWithEmail(email);
+        setStatus("sent");
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unable to send magic link";
       setError(message);
