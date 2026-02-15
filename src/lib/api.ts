@@ -38,18 +38,6 @@ export interface CampaignResult {
   runId?: string;
 }
 
-export interface AuthStatus {
-  success: boolean;
-  supabase: {
-    ok: boolean;
-    error?: string | null;
-  };
-  resend: {
-    ok: boolean;
-    error?: string | null;
-  };
-}
-
 const fetchWithTimeout = async (input: RequestInfo | URL, init?: RequestInit, timeout = 10000): Promise<Response> => {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeout);
@@ -90,26 +78,4 @@ export async function checkBackendHealth(): Promise<boolean> {
   } catch {
     return false;
   }
-}
-
-export async function requestMagicLink(email: string): Promise<void> {
-  const response = await fetchWithTimeout(API_ENDPOINTS.magicLink, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email }),
-  }, 12000);
-
-  if (!response.ok) {
-    const payload = await response.json().catch(() => ({}));
-    throw buildApiError(payload?.error || "Failed to request magic link", response.status);
-  }
-}
-
-export async function getAuthStatus(): Promise<AuthStatus> {
-  const response = await fetchWithTimeout(API_ENDPOINTS.authStatus, undefined, 8000);
-  if (!response.ok) {
-    throw new Error("Bridge auth diagnostics unavailable");
-  }
-
-  return response.json();
 }

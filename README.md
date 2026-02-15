@@ -106,15 +106,12 @@ Browser ──(fetch /api/campaigns/submit)──▶ Bridge API ──▶ opencl
 
 > **Lovable tip:** in your Lovable project go to **Settings → Environment Variables**, add the three Vite variables, redeploy, and the login form will immediately start issuing Supabase magic links from your configured project. As an emergency fallback you can also inject the globals by adding a head script: `<script>window.__PIPELINEAI_ENV={VITE_SUPABASE_URL:"https://...",VITE_SUPABASE_ANON_KEY:"sb_..."};</script>`.
 
-### Resend-backed magic links
+### Supabase magic links
 
-- The Node bridge (`npm run api`) exposes `POST /api/auth/magic-link`.
-- It uses `SUPABASE_SERVICE_ROLE_KEY` to generate a Supabase action link and then emails it via Resend (`RESEND_API_KEY` + `RESEND_FROM_EMAIL`).
-- Missing either the service-role key or the Resend credentials will return HTTP 503 so the frontend can fall back to Supabase directly.
-- Configure `MAGIC_LINK_REDIRECT` if you want the CTA to land somewhere other than `/dashboard`.
-- The frontend now calls this endpoint first; if it fails, it falls back to Supabase's built-in `signInWithOtp` so auth always works.
-- Supabase still enforces a short per-email rate limit. When the limit is hit the UI now surfaces a "wait a minute" message.
-- Hit `GET /api/auth/status` on the bridge server to verify whether Supabase + Resend credentials are wired correctly before testing the UI.
+- Authentication now uses Supabase's built-in email provider directly from the browser via `signInWithOtp`.
+- Configure Authentication → Email inside the Supabase dashboard (sender name, domain, etc.).
+- The bridge's `/api/auth/magic-link` endpoint still exists for manual testing, but the UI no longer depends on it. If you don't intend to use Resend you can leave those env vars unset.
+- Supabase enforces a short per-email rate limit. The login screen surfaces the "wait a minute" guidance automatically when that happens.
 
 ## Scripts
 
