@@ -114,6 +114,7 @@ Browser ──(fetch /api/campaigns/submit)──▶ Bridge API ──▶ opencl
 - Configure `MAGIC_LINK_REDIRECT` if you want the CTA to land somewhere other than `/dashboard`.
 - The frontend now calls this endpoint first; if it fails, it falls back to Supabase's built-in `signInWithOtp` so auth always works.
 - Supabase still enforces a short per-email rate limit. When the limit is hit the UI now surfaces a "wait a minute" message.
+- Hit `GET /api/auth/status` on the bridge server to verify whether Supabase + Resend credentials are wired correctly before testing the UI.
 
 ## Scripts
 

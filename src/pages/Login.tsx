@@ -44,7 +44,16 @@ const Login = () => {
   const shouldFallbackToSupabase = (err: unknown) => {
     if (!isApiError(err)) return true;
     if (!err.status) return true;
-    return err.status >= 500 || err.status === 404 || err.status === 503;
+    if (err.status === 404) return true;
+    if (err.status === 429) return false;
+    if (err.status === 503) return false;
+    if (err.status >= 500) {
+      const message = err.message?.toLowerCase() ?? "";
+      if (message.includes("service role") || message.includes("resend")) {
+        return false;
+      }
+    }
+    return err.status >= 500;
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {

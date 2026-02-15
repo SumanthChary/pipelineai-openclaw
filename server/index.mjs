@@ -139,6 +139,39 @@ const ensureSupabaseAdmin = () => {
   }
 };
 
+const supabaseHealth = {
+  lastChecked: 0,
+  ok: false,
+  error: "Supabase admin client not configured",
+};
+
+const SUPABASE_HEALTH_TTL = 60 * 1000;
+
+const checkSupabaseAdmin = async ({ force = false } = {}) => {
+  if (!supabaseAdminClient) {
+    supabaseHealth.ok = false;
+    supabaseHealth.error = "Supabase service role key missing";
+    return supabaseHealth;
+  }
+
+  const shouldCheck = force || Date.now() - supabaseHealth.lastChecked > SUPABASE_HEALTH_TTL;
+  if (!shouldCheck) {
+    return supabaseHealth;
+  }
+
+  supabaseHealth.lastChecked = Date.now();
+  try {
+    await supabaseAdminClient.auth.admin.listUsers({ page: 1, perPage: 1 });
+    supabaseHealth.ok = true;
+    supabaseHealth.error = null;
+  } catch (error) {
+    supabaseHealth.ok = false;
+    supabaseHealth.error = error?.message || "Unable to reach Supabase admin API";
+  }
+
+  return supabaseHealth;
+};
+
 const ensureResend = () => {
   if (!resendClient || !resendFromEmail) {
     throw new HttpError("Resend credentials missing. Set RESEND_API_KEY and RESEND_FROM_EMAIL.", 503);
@@ -164,6 +197,11 @@ const generateMagicLink = async (email) => {
   ensureSupabaseAdmin();
 
   const attempt = async () => {
+    const health = await checkSupabaseAdmin({ force: true });
+    if (!health.ok) {
+      throw new HttpError(health.error || "Supabase admin unavailable", 500);
+    }
+
     const { data, error } = await supabaseAdminClient.auth.admin.generateLink({
       type: "magiclink",
       email,
@@ -172,6 +210,9 @@ const generateMagicLink = async (email) => {
 
     if (error) {
       const message = error.message || "Unable to generate link";
+      if (error.status === 401 || /requires a valid Bearer/i.test(message) || /invalid token/i.test(message)) {
+        throw new HttpError("Invalid SUPABASE_SERVICE_ROLE_KEY. Use the service_role key from Project Settings → API.", 500);
+      }
       if (error.code === "over_email_send_rate_limit" || /rate limit/i.test(message)) {
         throw new HttpError("Too many magic link requests. Please wait 60 seconds and try again.", 429);
       }
@@ -226,6 +267,21 @@ const server = createServer(async (req, res) => {
     }
 
     const url = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
+
+    if (req.method === "GET" && url.pathname === "/api/auth/status") {
+      const supabaseStatus = await checkSupabaseAdmin({ force: true });
+      const resendStatus = {
+        ok: Boolean(resendClient && resendFromEmail),
+        error: !resendClient || !resendFromEmail ? "Resend API key or from email missing" : null,
+      };
+
+      respond(res, 200, {
+        success: true,
+        supabase: supabaseStatus,
+        resend: resendStatus,
+      });
+      return;
+    }
 
     if (req.method === "POST" && url.pathname === "/api/auth/magic-link") {
       try {
