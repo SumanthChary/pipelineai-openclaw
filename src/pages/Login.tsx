@@ -1,13 +1,14 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { isApiError, requestMagicLink } from "@/lib/api";
+import { AuthStatus, getAuthStatus, isApiError, requestMagicLink } from "@/lib/api";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Mail, ShieldCheck } from "lucide-react";
+import { Mail, ShieldCheck, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const Login = () => {
   const { signInWithEmail } = useAuth();
@@ -16,6 +17,44 @@ const Login = () => {
   const [status, setStatus] = useState<"idle" | "loading" | "sent" | "error">("idle");
   const [statusCopy, setStatusCopy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [authStatus, setAuthStatus] = useState<AuthStatus | null>(null);
+  const [statusLoading, setStatusLoading] = useState(true);
+  const [statusError, setStatusError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    const fetchStatus = async () => {
+      try {
+        setStatusLoading(true);
+        const result = await getAuthStatus();
+        if (!active) return;
+        setAuthStatus(result);
+        setStatusError(null);
+      } catch (err) {
+        if (!active) return;
+        setAuthStatus(null);
+        setStatusError("Magic-link bridge unreachable. Configure Resend + Supabase on the server.");
+      } finally {
+        if (active) {
+          setStatusLoading(false);
+        }
+      }
+    };
+
+    fetchStatus();
+    const interval = setInterval(fetchStatus, 60000);
+
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  const resendReady = authStatus?.resend.ok ?? false;
+  const supabaseReady = authStatus?.supabase.ok ?? false;
+  const bridgeReady = resendReady && supabaseReady;
+  const statusMessage = authStatus?.resend.error || authStatus?.supabase.error;
 
   const describeSupabaseError = (err: unknown) => {
     if (err && typeof err === "object" && "message" in err) {
@@ -52,6 +91,9 @@ const Login = () => {
       if (message.includes("service role") || message.includes("resend")) {
         return false;
       }
+    }
+    if (authStatus && !resendReady) {
+      return false;
     }
     return err.status >= 500;
   };
@@ -114,7 +156,17 @@ const Login = () => {
                     required
                   />
                 </div>
-                <Button type="submit" disabled={status === "loading" || status === "sent"} className="w-full gap-2">
+                <StatusGrid
+                  loading={statusLoading}
+                  resendReady={resendReady}
+                  supabaseReady={supabaseReady}
+                  error={statusError || statusMessage || undefined}
+                />
+                <Button
+                  type="submit"
+                  disabled={status === "loading" || status === "sent" || (!statusLoading && authStatus !== null && !bridgeReady)}
+                  className="w-full gap-2"
+                >
                   {status === "loading" ? "Sending…" : status === "sent" ? "Magic link sent" : "Email me a login link"}
                   <Mail className="h-4 w-4" />
                 </Button>
@@ -143,3 +195,62 @@ const Login = () => {
 };
 
 export default Login;
+
+type StatusGridProps = {
+  loading: boolean;
+  resendReady: boolean;
+  supabaseReady: boolean;
+  error?: string;
+};
+
+const StatusGrid = ({ loading, resendReady, supabaseReady, error }: StatusGridProps) => {
+  const indicators = useMemo(
+    () => [
+      { label: "Resend API", ok: resendReady, description: resendReady ? "Email delivery ready." : "Configure Resend API key + sender." },
+      { label: "Supabase admin", ok: supabaseReady, description: supabaseReady ? "Magic link generator ready." : "Check service_role key." },
+    ],
+    [resendReady, supabaseReady],
+  );
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">Email system</p>
+        {loading ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /> : null}
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {indicators.map((indicator) => (
+          <StatusIndicator key={indicator.label} {...indicator} loading={loading} />
+        ))}
+      </div>
+      {error && (
+        <div className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+          {error}
+        </div>
+      )}
+    </div>
+  );
+};
+
+type StatusIndicatorProps = {
+  label: string;
+  ok: boolean;
+  description?: string;
+  loading?: boolean;
+};
+
+const StatusIndicator = ({ label, ok, description, loading }: StatusIndicatorProps) => (
+  <div className="rounded-lg border border-border/70 px-3 py-2">
+    <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
+    <div
+      className={cn(
+        "mt-1 flex items-center gap-1 text-sm font-semibold",
+        loading ? "text-muted-foreground" : ok ? "text-emerald-600" : "text-red-600",
+      )}
+    >
+      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : ok ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+      {loading ? "Checking…" : ok ? "Ready" : "Needs attention"}
+    </div>
+    {!loading && !ok && description ? <p className="mt-1 text-xs text-muted-foreground">{description}</p> : null}
+  </div>
+);
