@@ -3,28 +3,28 @@ import { ChevronDown } from "lucide-react";
 
 const faqs = [
   {
-    question: "How does PipelineAI's AI outreach work?",
-    answer: "Our AI agents research each prospect individually — analyzing their company, role, recent activity, and pain points — then craft hyper-personalized emails that feel hand-written. No templates, no generic messaging.",
+    question: "How does OpenClaw's AI outreach work?",
+    answer: "Our AI agents research each prospect — analyzing their company, role, and recent activity — then craft personalized emails designed to start real conversations. No generic templates.",
   },
   {
     question: "How long does it take to see results?",
-    answer: "Most teams start seeing qualified meetings booked within the first 2 weeks. By the end of month one, our average client has 30+ meetings on their calendar.",
+    answer: "Most teams start seeing qualified replies within the first 2 weeks. Results depend on your ICP, offer, and email domain health. We help optimize all three during onboarding.",
   },
   {
     question: "Do I need technical skills to get started?",
-    answer: "Not at all. Setup takes about 5 minutes. Connect your email, define your ideal customer profile, and let our AI do the rest. We also provide white-glove onboarding for Growth and Enterprise plans.",
+    answer: "Not at all. Setup takes about 5 minutes. Connect your email, define your ideal customer profile, and let the AI do the rest. We also provide hands-on onboarding for paid plans.",
   },
   {
     question: "Will this hurt my email deliverability?",
-    answer: "No. We include a built-in email warmup engine, automatic domain rotation, and compliance monitoring to keep your sender reputation pristine and stay out of spam folders.",
+    answer: "No. We include a built-in email warmup engine, automatic domain rotation, and compliance monitoring to protect your sender reputation.",
   },
   {
-    question: "Can I integrate PipelineAI with my existing CRM?",
-    answer: "Yes. We integrate natively with Salesforce, HubSpot, Pipedrive, and other major CRMs. All meetings, replies, and pipeline data sync automatically.",
+    question: "Can I integrate OpenClaw with my existing CRM?",
+    answer: "Yes. We integrate with Salesforce, HubSpot, Pipedrive, and other popular CRMs. All replies and meeting data sync automatically.",
   },
   {
-    question: "What happens when I hit my plan limit?",
-    answer: "We'll notify you before you hit your limit. You can upgrade at any time, and unused credits roll over to the next month.",
+    question: "Is OpenClaw open-source?",
+    answer: "OpenClaw's core AI agent framework is open-source with 187K+ GitHub stars. This platform is built on top of OpenClaw, providing a managed experience for sales teams.",
   },
 ];
 

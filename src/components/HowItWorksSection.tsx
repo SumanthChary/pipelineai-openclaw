@@ -11,19 +11,19 @@ const steps = [
     icon: Bot,
     step: "02",
     title: "Deploy AI Agents",
-    description: "Our AI agents research each prospect and craft hyper-personalized outreach sequences.",
+    description: "OpenClaw agents research each prospect and craft personalized outreach sequences.",
   },
   {
     icon: Repeat,
     step: "03",
     title: "Engage & Nurture",
-    description: "Automated follow-ups, multi-channel sequences, and smart replies keep conversations going.",
+    description: "Automated follow-ups and multi-channel sequences keep conversations moving forward.",
   },
   {
     icon: TrendingUp,
     step: "04",
     title: "Book Meetings",
-    description: "Qualified meetings land directly in your calendar. You just show up and close.",
+    description: "Qualified meetings land directly in your calendar. You focus on closing.",
   },
 ];
 
@@ -34,7 +34,7 @@ const HowItWorksSection = () => {
         <div className="text-center max-w-2xl mx-auto mb-16">
           <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">How It Works</p>
           <h2 className="text-3xl lg:text-4xl font-extrabold text-foreground mb-4">
-            From Zero to Booked in <span className="text-primary">4 Simple Steps</span>
+            From Setup to Booked in <span className="text-primary">4 Simple Steps</span>
           </h2>
         </div>
 

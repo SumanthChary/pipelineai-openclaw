@@ -1,8 +1,8 @@
 const stats = [
-  { value: "47+", label: "Avg Meetings Booked", sublabel: "per month per client" },
-  { value: "38%", label: "Reply Rate", sublabel: "industry avg is 3%" },
-  { value: "2.5x", label: "Pipeline Growth", sublabel: "within first 90 days" },
-  { value: "98%", label: "Client Retention", sublabel: "year over year" },
+  { value: "24+", label: "Avg Meetings Booked", sublabel: "per month per client" },
+  { value: "12%", label: "Reply Rate", sublabel: "industry avg is 1-3%" },
+  { value: "1.8x", label: "Pipeline Growth", sublabel: "within first 90 days" },
+  { value: "92%", label: "Client Satisfaction", sublabel: "based on user surveys" },
 ];
 
 const StatsSection = () => {
@@ -12,7 +12,7 @@ const StatsSection = () => {
         <div className="text-center max-w-2xl mx-auto mb-16">
           <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">Results</p>
           <h2 className="text-3xl lg:text-4xl font-extrabold text-foreground">
-            How Results Prove <span className="text-primary">Real Sales</span>
+            Real Results From <span className="text-primary">Real Teams</span>
           </h2>
         </div>
 

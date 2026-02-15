@@ -1,20 +1,25 @@
-import { Zap } from "lucide-react";
+import { Zap, Menu, X } from "lucide-react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2">
           <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
             <Zap className="w-5 h-5 text-primary-foreground" fill="currentColor" />
           </div>
-          <span className="text-lg font-bold text-foreground">PipelineAI</span>
-        </div>
+          <span className="text-lg font-bold text-foreground">OpenClaw</span>
+        </Link>
 
         <div className="hidden md:flex items-center gap-8">
           <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Product</a>
           <a href="#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Solutions</a>
           <a href="#pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
+          <a href="#integrations" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Integrations</a>
           <a href="#faq" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Resources</a>
         </div>
 
@@ -23,8 +28,22 @@ const Navbar = () => {
           <a href="#" className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
             Get Started
           </a>
+          <button className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
+            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <div className="md:hidden bg-background border-b border-border px-6 py-4 space-y-3">
+          <a href="#features" className="block text-sm font-medium text-muted-foreground hover:text-foreground" onClick={() => setMobileOpen(false)}>Product</a>
+          <a href="#how-it-works" className="block text-sm font-medium text-muted-foreground hover:text-foreground" onClick={() => setMobileOpen(false)}>Solutions</a>
+          <a href="#pricing" className="block text-sm font-medium text-muted-foreground hover:text-foreground" onClick={() => setMobileOpen(false)}>Pricing</a>
+          <a href="#integrations" className="block text-sm font-medium text-muted-foreground hover:text-foreground" onClick={() => setMobileOpen(false)}>Integrations</a>
+          <a href="#faq" className="block text-sm font-medium text-muted-foreground hover:text-foreground" onClick={() => setMobileOpen(false)}>Resources</a>
+        </div>
+      )}
     </nav>
   );
 };

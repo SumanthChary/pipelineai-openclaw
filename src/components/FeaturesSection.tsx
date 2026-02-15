@@ -4,12 +4,12 @@ const features = [
   {
     icon: Mail,
     title: "AI-Powered Outreach",
-    description: "Hyper-personalized emails crafted by AI that actually get replies. No templates, no spam.",
+    description: "Personalized emails crafted by OpenClaw's AI that resonate with each prospect. No generic templates.",
   },
   {
     icon: Users,
     title: "Smart Lead Scoring",
-    description: "Automatically identify and prioritize your highest-value prospects based on intent signals.",
+    description: "Automatically identify and prioritize prospects based on engagement signals and fit criteria.",
   },
   {
     icon: Calendar,
@@ -29,7 +29,7 @@ const features = [
   {
     icon: Shield,
     title: "Deliverability Engine",
-    description: "Built-in warmup, rotation, and compliance to keep you out of spam folders.",
+    description: "Built-in warmup, rotation, and compliance to protect your sender reputation.",
   },
 ];
 
@@ -43,7 +43,7 @@ const FeaturesSection = () => {
             Everything You Need to <span className="text-primary">Scale Outbound</span>
           </h2>
           <p className="text-muted-foreground text-lg">
-            One platform to find, engage, and convert your ideal customers on autopilot.
+            One platform powered by OpenClaw to find, engage, and convert your ideal customers.
           </p>
         </div>
 
