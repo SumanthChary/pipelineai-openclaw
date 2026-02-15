@@ -16,13 +16,11 @@ const DashboardPreview = () => {
       <Navbar />
       <div className="pt-20 pb-16">
         <div className="max-w-7xl mx-auto px-6">
-          {/* Header */}
           <div className="mb-8">
             <h1 className="text-2xl font-extrabold text-foreground mb-1">Dashboard</h1>
-            <p className="text-sm text-muted-foreground">Overview of your OpenClaw agents and pipeline performance.</p>
+            <p className="text-sm text-muted-foreground">Overview of your Pipeline AI agents and performance.</p>
           </div>
 
-          {/* Stats row */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {[
               { icon: Mail, label: "Emails Sent", value: "1,247", change: "+12%", period: "this month" },
@@ -35,7 +33,7 @@ const DashboardPreview = () => {
                   <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
                     <stat.icon className="w-4 h-4 text-primary" />
                   </div>
-                  <span className="text-xs font-medium text-green-light flex items-center gap-0.5">
+                  <span className="text-xs font-medium text-accent flex items-center gap-0.5">
                     {stat.change} <ArrowUpRight className="w-3 h-3" />
                   </span>
                 </div>
@@ -46,7 +44,6 @@ const DashboardPreview = () => {
           </div>
 
           <div className="grid lg:grid-cols-3 gap-6">
-            {/* Chart */}
             <div className="lg:col-span-2 bg-card rounded-xl border border-border p-6">
               <div className="flex items-center justify-between mb-6">
                 <div>
@@ -57,24 +54,12 @@ const DashboardPreview = () => {
               </div>
               <div className="h-48 relative">
                 <svg viewBox="0 0 500 150" className="w-full h-full" preserveAspectRatio="none">
-                  {/* Grid lines */}
                   {[0, 37.5, 75, 112.5, 150].map((y) => (
-                    <line key={y} x1="0" y1={y} x2="500" y2={y} stroke="hsl(214 32% 91%)" strokeWidth="0.5" />
+                    <line key={y} x1="0" y1={y} x2="500" y2={y} stroke="hsl(210 20% 18%)" strokeWidth="0.5" />
                   ))}
-                  {/* Emails line */}
-                  <path
-                    d="M0 120 C60 115, 100 105, 150 95 C200 85, 250 75, 300 60 C350 50, 400 45, 450 35 L500 30"
-                    fill="none" stroke="hsl(221 83% 53%)" strokeWidth="2"
-                  />
-                  <path
-                    d="M0 120 C60 115, 100 105, 150 95 C200 85, 250 75, 300 60 C350 50, 400 45, 450 35 L500 30 L500 150 L0 150Z"
-                    fill="hsl(221 83% 53% / 0.06)"
-                  />
-                  {/* Replies line */}
-                  <path
-                    d="M0 140 C60 138, 100 132, 150 125 C200 120, 250 110, 300 105 C350 100, 400 95, 450 88 L500 85"
-                    fill="none" stroke="hsl(152 69% 31%)" strokeWidth="2"
-                  />
+                  <path d="M0 120 C60 115, 100 105, 150 95 C200 85, 250 75, 300 60 C350 50, 400 45, 450 35 L500 30" fill="none" stroke="hsl(0 78% 55%)" strokeWidth="2" />
+                  <path d="M0 120 C60 115, 100 105, 150 95 C200 85, 250 75, 300 60 C350 50, 400 45, 450 35 L500 30 L500 150 L0 150Z" fill="hsl(0 78% 55% / 0.06)" />
+                  <path d="M0 140 C60 138, 100 132, 150 125 C200 120, 250 110, 300 105 C350 100, 400 95, 450 88 L500 85" fill="none" stroke="hsl(174 60% 40%)" strokeWidth="2" />
                 </svg>
               </div>
               <div className="flex gap-6 mt-4">
@@ -83,13 +68,12 @@ const DashboardPreview = () => {
                   <span className="text-xs text-muted-foreground">Emails Sent</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-1 rounded bg-green-accent" />
+                  <div className="w-3 h-1 rounded bg-accent" />
                   <span className="text-xs text-muted-foreground">Replies</span>
                 </div>
               </div>
             </div>
 
-            {/* Active Agents */}
             <div className="bg-card rounded-xl border border-border p-6">
               <h3 className="text-sm font-semibold text-foreground mb-4">Active Agents</h3>
               <div className="space-y-4">
@@ -103,7 +87,7 @@ const DashboardPreview = () => {
                         <Bot className="w-4 h-4 text-primary" />
                         <span className="text-sm font-semibold text-foreground">{agent.name}</span>
                       </div>
-                      <span className="text-[10px] font-bold text-green-light uppercase tracking-wider">{agent.status}</span>
+                      <span className="text-[10px] font-bold text-accent uppercase tracking-wider">{agent.status}</span>
                     </div>
                     <div className="flex gap-4 text-xs text-muted-foreground">
                       <span>{agent.emails} emails sent</span>
@@ -115,7 +99,6 @@ const DashboardPreview = () => {
             </div>
           </div>
 
-          {/* Recent Activity */}
           <div className="mt-6 bg-card rounded-xl border border-border p-6">
             <h3 className="text-sm font-semibold text-foreground mb-4">Recent Activity</h3>
             <div className="space-y-3">
@@ -123,9 +106,9 @@ const DashboardPreview = () => {
                 <div key={i} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                   <div className="flex items-center gap-3">
                     <div className={`w-2 h-2 rounded-full ${
-                      item.status === "reply" ? "bg-green-light" :
+                      item.status === "reply" ? "bg-accent" :
                       item.status === "booked" ? "bg-primary" :
-                      item.status === "qualified" ? "bg-blue-light" :
+                      item.status === "qualified" ? "bg-teal-light" :
                       "bg-muted-foreground"
                     }`} />
                     <span className="text-sm text-foreground">

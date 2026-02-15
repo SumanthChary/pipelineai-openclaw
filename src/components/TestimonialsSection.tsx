@@ -1,24 +1,9 @@
 import { Star } from "lucide-react";
 
 const testimonials = [
-  {
-    quote: "OpenClaw helped us systematize our outbound process. We went from ad-hoc emails to a structured pipeline in under a week.",
-    name: "Sarah Chen",
-    role: "Head of Sales, TechFlow",
-    rating: 5,
-  },
-  {
-    quote: "The AI personalization is genuinely impressive. Our reply rates improved noticeably within the first month of using the platform.",
-    name: "Marcus Rivera",
-    role: "Founder, GrowthLab",
-    rating: 5,
-  },
-  {
-    quote: "As a small team, we couldn't afford dedicated SDRs. OpenClaw gave us a scalable way to do outbound without hiring.",
-    name: "Priya Patel",
-    role: "CEO, DataBridge",
-    rating: 5,
-  },
+  { quote: "Pipeline AI helped us systematize our outbound process. We went from ad-hoc emails to a structured pipeline in under a week.", name: "Sarah Chen", role: "Head of Sales, TechFlow", rating: 5 },
+  { quote: "The AI personalization is genuinely impressive. Our reply rates improved noticeably within the first month of using the platform.", name: "Marcus Rivera", role: "Founder, GrowthLab", rating: 5 },
+  { quote: "As a small team, we couldn't afford dedicated SDRs. Pipeline AI gave us a scalable way to do outbound without hiring.", name: "Priya Patel", role: "CEO, DataBridge", rating: 5 },
 ];
 
 const TestimonialsSection = () => {
@@ -26,13 +11,11 @@ const TestimonialsSection = () => {
     <section id="testimonials" className="py-24 bg-background">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">Testimonials</p>
+          <p className="text-sm font-semibold text-accent uppercase tracking-wider mb-3">What People Say</p>
           <h2 className="text-3xl lg:text-4xl font-extrabold text-foreground mb-4">
-            What Our <span className="text-primary">Users Say</span>
+            Trusted by <span className="text-primary">Sales Teams</span>
           </h2>
-          <p className="text-muted-foreground text-lg">
-            Hear from teams using OpenClaw to grow their pipeline.
-          </p>
+          <p className="text-muted-foreground text-lg">Hear from teams using Pipeline AI to grow their pipeline.</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
