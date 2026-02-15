@@ -12,6 +12,7 @@ export type ProfileRecord = {
   max_parallel_runs: number;
   max_daily_campaigns: number;
   is_founder: boolean;
+  metadata: Record<string, unknown> | null;
   created_at?: string;
   updated_at?: string;
 };
@@ -69,7 +70,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("id,email,role,plan,seats,max_parallel_runs,max_daily_campaigns,is_founder,created_at,updated_at")
+        .select("id,email,role,plan,seats,max_parallel_runs,max_daily_campaigns,is_founder,metadata,created_at,updated_at")
         .eq("id", user.id)
         .maybeSingle();
 
@@ -95,8 +96,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           max_parallel_runs: founder ? 10 : 1,
           max_daily_campaigns: founder ? 999 : 3,
           is_founder: founder,
+          metadata: null,
         })
-        .select("id,email,role,plan,seats,max_parallel_runs,max_daily_campaigns,is_founder,created_at,updated_at")
+        .select("id,email,role,plan,seats,max_parallel_runs,max_daily_campaigns,is_founder,metadata,created_at,updated_at")
         .single();
 
       if (upsertError) {

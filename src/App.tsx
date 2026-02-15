@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import DashboardPreview from "./pages/DashboardPreview";
 import Campaign from "./pages/Campaign";
 import Login from "./pages/Login";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "@/providers/AuthProvider";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
@@ -35,6 +36,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Campaign />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
                 </ProtectedRoute>
               }
             />
