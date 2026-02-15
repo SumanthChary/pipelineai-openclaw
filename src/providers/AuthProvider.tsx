@@ -114,17 +114,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signInWithEmail = async (email: string) => {
     if (!supabase) throw new Error("Supabase client missing");
+
+    // Use the current origin for the redirect so it works in any environment
+    // (localhost, Codespace, Lovable, etc.)
+    const redirectTo =
+      runtimeEnv.VITE_MAGIC_LINK_REDIRECT || `${window.location.origin}/dashboard`;
+
+    console.log("[auth] Sending magic link to", email, "redirect →", redirectTo);
+
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: runtimeEnv.VITE_MAGIC_LINK_REDIRECT || `${window.location.origin}/dashboard`,
+        emailRedirectTo: redirectTo,
         shouldCreateUser: true,
       },
     });
 
     if (error) {
+      console.error("[auth] signInWithOtp error:", error.message, error);
       throw error;
     }
+
+    console.log("[auth] Magic link OTP request successful — email should be sent by Supabase");
   };
 
   const signOut = async () => {

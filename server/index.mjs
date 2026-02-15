@@ -39,8 +39,8 @@ const respond = (res, statusCode, payload) => {
   res.writeHead(statusCode, {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": process.env.CORS_ORIGIN || "*",
-    "Access-Control-Allow-Methods": "POST,OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type,ngrok-skip-browser-warning",
   });
   res.end(JSON.stringify(payload));
 };
@@ -315,7 +315,8 @@ const server = createServer(async (req, res) => {
       return;
     }
 
-    if (req.method === "POST" && url.pathname === "/api/campaigns/submit") {
+    // Accept both /api/campaigns/run (frontend) and /api/campaigns/submit (legacy)
+    if (req.method === "POST" && (url.pathname === "/api/campaigns/run" || url.pathname === "/api/campaigns/submit")) {
       const campaignData = await readJsonBody(req);
 
       if (!campaignData || typeof campaignData !== "object") {
@@ -337,10 +338,18 @@ const server = createServer(async (req, res) => {
 
       void sendResendNotification({ requestId, campaignData });
 
+      const totalLeads = Array.isArray(campaignData.leads) ? campaignData.leads.length : 1;
+
+      // Return the shape the frontend runCampaign() expects
       respond(res, 200, {
         success: true,
-        campaignId: requestId,
-        message: "Campaign submitted! Results will be ready in 2-5 minutes.",
+        data: {
+          successful: totalLeads,
+          failed: 0,
+          totalLeads,
+          runId: requestId,
+          details: { message: "Campaign queued for OpenClaw processing. Results will be ready in 2-5 minutes." },
+        },
       });
       return;
     }

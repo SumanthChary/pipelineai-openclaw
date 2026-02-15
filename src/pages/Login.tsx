@@ -13,7 +13,7 @@ const COOLDOWN_SECONDS = 60;
 const Login = () => {
   const { signInWithEmail } = useAuth();
   const location = useLocation();
-  const [email, setEmail] = useState("enjoywithpandu@gmail.com");
+  const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "sent" | "error">("idle");
   const [statusCopy, setStatusCopy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
